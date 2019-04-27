@@ -15,18 +15,26 @@ class UsersController < ApplicationController
 
     UserMailer.welcome_email(@user).deliver_later!
     sign_in(@user)
+
+    flash[:notice] = 'Successfully signed up!'
     redirect_to profile_path
   end
 
-  def show
-  end
+  def show; end
 
-  def update; end
+  def update
+    validate_password
+
+    return render :show if @user.errors.any? || !@user.update(name: user_params[:name], encrypted_password: encrypted_password)
+
+    flash[:notice] = 'Successfully updated your profile info!'
+    redirect_to profile_path
+  end
 
   private
 
   def user_params
-    params.require(:user).permit(:email, :password, :password_confirmation)
+    params.require(:user).permit(:email, :name, :password, :password_confirmation)
   end
 
   def validate_password
