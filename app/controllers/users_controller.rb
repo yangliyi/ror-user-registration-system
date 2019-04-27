@@ -1,6 +1,8 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!, only: %i[show update]
   before_action :set_user, only: %i[show update]
+  before_action :set_token, only: %i[reset_password update_password]
+  before_action :validate_reset_token, only: %i[reset_password update_password]
 
   def new
     return redirect_to profile_path if current_user
@@ -31,6 +33,33 @@ class UsersController < ApplicationController
     redirect_to profile_path
   end
 
+  def forgot_password; end
+
+  def send_reset_email
+    @user = User.find_by(email: params[:email])
+    if @user&.update(reset_password_token: SecureRandom.uuid, reset_password_sent_at: Time.now)
+      UserMailer.reset_password_email(@user).deliver_later!
+
+      flash[:notice] = 'Reset password email is sent'
+      redirect_to login_path
+    else
+      flash[:alert] = 'email is not correct'
+      redirect_to forgot_password_users_path
+    end
+  end
+
+  def reset_password; end
+
+  def update_password
+    validate_password
+    if @user.update(encrypted_password: encrypted_password, reset_password_token: nil, reset_password_sent_at: nil)
+      flash[:notice] = 'password is updated successfully'
+      redirect_to login_path
+    else
+      render :reset_password
+    end
+  end
+
   private
 
   def user_params
@@ -42,7 +71,7 @@ class UsersController < ApplicationController
       @user.errors.add(:invalid_length, "password must not be less than #{min_password_length} characters")
     end
 
-    if password_not_confirmed?
+    if password_not_matched?
       @user.errors.add(:password_not_matched, 'please confirm your password again')
     end
   end
@@ -63,7 +92,7 @@ class UsersController < ApplicationController
     @min_password_length ||= User.min_password_length
   end
 
-  def password_not_confirmed?
+  def password_not_matched?
     password != password_confirmation
   end
 
@@ -73,5 +102,16 @@ class UsersController < ApplicationController
 
   def set_user
     @user = current_user
+  end
+
+  def set_token
+    @token = params[:token]
+  end
+
+  def validate_reset_token
+    @user = User.find_by(reset_password_token: @token)
+    return if @user &.token_not_expired?
+    flash[:alert] = 'link is expired'
+    redirect_to root_path
   end
 end

@@ -3,7 +3,7 @@
 <%= form_tag sessions_path do |f| %>
   <div>
     <%= label_tag :email %><br/>
-    <%= email_field_tag :email, nil, autofocus: true, autocomplete: "email" %>
+    <%= email_field_tag :email, nil, autofocus: true, autocomplete: "email", required: true %>
   </div>
   
   <div>
@@ -13,3 +13,5 @@
   
   <%= submit_tag "Submit" %>
 <% end %>
+
+<%= link_to 'Forgot password', forgot_password_users_path %>
