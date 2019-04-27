@@ -1,0 +1,15 @@
+<h2>Log In</h2>
+
+<%= form_tag sessions_path do |f| %>
+  <div>
+    <%= label_tag :email %><br/>
+    <%= email_field_tag :email, nil, autofocus: true, autocomplete: "email" %>
+  </div>
+  
+  <div>
+    <%= label_tag :password %><br/>
+    <%= password_field_tag :password, nil, required: true %>
+  </div>
+  
+  <%= submit_tag "Submit" %>
+<% end %>
