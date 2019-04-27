@@ -3,6 +3,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[show update]
 
   def new
+    return redirect_to profile_path if current_user
     @user = User.new
   end
 
@@ -12,6 +13,7 @@ class UsersController < ApplicationController
 
     return render :new if @user.errors.any? || !@user.save
 
+    UserMailer.welcome_email(@user).deliver_later!
     sign_in(@user)
     redirect_to profile_path
   end
