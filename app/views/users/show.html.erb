@@ -1,0 +1,34 @@
+<h2>Profile page</h2>
+
+<%= form_for @user do |f| %>
+  <% if @user.errors.any? %>
+    <strong>You failed submission:</strong>
+    <ul>
+    <% @user.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :email %><br/>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", disabled: true %>
+  </div>
+
+  <div>
+    <%= f.label :name %><br/>
+    <%= f.text_field :name, autocomplete: "name", required: true %>
+  </div>
+  
+  <div>
+    <%= f.label :password %><br/>
+    <%= f.password_field :password, required: true %>
+  </div>
+
+  <div>
+    <%= f.label :password_confirmation %><br />
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true %>
+  </div>
+  
+  <%= f.submit "Submit" %>
+<% end %>
