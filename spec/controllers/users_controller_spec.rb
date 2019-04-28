@@ -61,6 +61,7 @@ RSpec.describe UsersController, type: :controller do
       Then do
         expect { post :create, params: params }.to change(User, :count).by(1)
       end
+      And { request.session[:user_id] == User.find_by(email: params[:user][:email]).id }
     end
   end
 
