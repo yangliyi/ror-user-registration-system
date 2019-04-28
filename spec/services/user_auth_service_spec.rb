@@ -15,7 +15,7 @@ RSpec.describe UserAuthService do
       When(:user) { service.validate_user }
       Then { user.errors.size == 1 }
       And do
-        user.errors.full_messages[0] == 'Invalid length password must not be less than 8 characters'
+        user.errors.full_messages[0] == 'password must not be less than 8 characters'
       end
     end
 
@@ -29,7 +29,7 @@ RSpec.describe UserAuthService do
       When(:user) { service.validate_user }
       Then { user.errors.size == 1 }
       And do
-        user.errors.full_messages[0] == 'Password not matched please confirm your password again'
+        user.errors.full_messages[0] == 'please confirm your password again'
       end
     end
 

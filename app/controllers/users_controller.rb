@@ -12,7 +12,7 @@ class UsersController < ApplicationController
   def create
     @user = auth_service.validate_user
 
-    return render :new if @user.errors.any? || !@user.update(email: user_params[:email], encrypted_password: encrypted_password)
+    return render :new if @user.errors.any? || !@user.update(encrypted_password: encrypted_password)
 
     UserMailer.welcome_email(@user).deliver_later!
     sign_in(@user)
@@ -71,13 +71,13 @@ class UsersController < ApplicationController
 
   def validate_reset_token
     @user = User.find_by(reset_password_token: @token)
-    return if @user &.token_not_expired?
+    return if @user&.token_not_expired?
     flash[:alert] = 'link is expired'
     redirect_to root_path
   end
 
   def auth_service
-    @auth_service ||= UserAuthService.new(@user || User.new, user_params)
+    @auth_service ||= UserAuthService.new(@user || User.new(email: user_params[:email]), user_params)
   end
 
   def user_params

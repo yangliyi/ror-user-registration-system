@@ -22,7 +22,7 @@ RSpec.describe UsersController, type: :controller do
       Given(:params) do
         {
           user: {
-            email: 'new_email',
+            email: 'new.email@liyi.com',
             password: 'password',
             password_confirmation: 'wrong_password'
           }
@@ -37,7 +37,7 @@ RSpec.describe UsersController, type: :controller do
       Given(:params) do
         {
           user: {
-            email: 'new_email',
+            email: 'new.email@liyi.com',
             password: 'short',
             password_confirmation: 'short'
           }

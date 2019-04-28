@@ -8,6 +8,7 @@ class UserAuthService
 
   def validate_user
     validate_password
+    validate_email
     @user
   end
 
@@ -19,11 +20,11 @@ class UserAuthService
 
   def validate_password
     if invalid_length?
-      @user.errors.add(:invalid_length, "password must not be less than #{min_password_length} characters")
+      @user.errors.add(:base, "password must not be less than #{min_password_length} characters")
     end
 
     return unless password_not_matched?
-    @user.errors.add(:password_not_matched, 'please confirm your password again')
+    @user.errors.add(:base, 'please confirm your password again')
   end
 
   def invalid_length?
@@ -46,5 +47,15 @@ class UserAuthService
 
   def password_confirmation
     user_params[:password_confirmation]
+  end
+
+  def validate_email
+    return unless email_already_used?
+    @user.errors.add(:base, 'email has already been taken')
+  end
+
+  def email_already_used?
+    return true if @user.new_record? && User.exists?(email: @user.email)
+    User.where.not(id: @user.id).where(email: @user.email).count > 0
   end
 end
