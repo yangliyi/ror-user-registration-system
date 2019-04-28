@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  validates :email, uniqueness: true, presence: true
+  validates :email, uniqueness: true, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: 'only allows valid emails' }
   validates :name, :encrypted_password, presence: true
   validates :name, length: { minimum: 5 }, unless: :skip_name_check?
   validates :reset_password_token, uniqueness: true, allow_blank: true

@@ -1,4 +1,12 @@
 RSpec.describe User, type: :model do
+  describe 'email validation' do
+    Given(:user) { build(:user, email: 'aaa@aaa_aaa') }
+    When(:validation_result) { user.valid? }
+    Then { validation_result == false }
+    And { user.errors.size == 1 }
+    And { user.errors.full_messages[0] == 'Email only allows valid emails' }
+  end
+
   describe 'self.min_password_length' do
     context 'returns value based on the constant in user model' do
       Then { User.min_password_length == User::MIN_PASSWORD_LENGTH }
@@ -35,8 +43,10 @@ RSpec.describe User, type: :model do
   end
 
   describe '#generate_token' do
-    Given(:user) { create(:user) }
-    When { user.generate_token }
-    Then { user.reset_password_token.present? && user.reset_password_sent_at.present? }
+    context 'updates user with reset_password_token and reset_password_sent_at' do
+      Given(:user) { create(:user) }
+      When { user.generate_token }
+      Then { user.reset_password_token.present? && user.reset_password_sent_at.present? }
+    end
   end
 end
