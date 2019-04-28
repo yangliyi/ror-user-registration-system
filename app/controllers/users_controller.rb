@@ -10,10 +10,9 @@ class UsersController < ApplicationController
   end
 
   def create
-    @user = User.new(email: user_params[:email], encrypted_password: encrypted_password)
-    validate_password
+    @user = auth_service.validate_user
 
-    return render :new if @user.errors.any? || !@user.save
+    return render :new if @user.errors.any? || !@user.update(email: user_params[:email], encrypted_password: encrypted_password)
 
     UserMailer.welcome_email(@user).deliver_later!
     sign_in(@user)
@@ -25,7 +24,7 @@ class UsersController < ApplicationController
   def show; end
 
   def update
-    validate_password
+    @user = auth_service.validate_user
 
     return render :show if @user.errors.any? || !@user.update(name: user_params[:name], encrypted_password: encrypted_password)
 
@@ -37,7 +36,7 @@ class UsersController < ApplicationController
 
   def send_reset_email
     @user = User.find_by(email: params[:email])
-    if @user&.update(reset_password_token: SecureRandom.uuid, reset_password_sent_at: Time.now)
+    if @user&.generate_token
       UserMailer.reset_password_email(@user).deliver_later!
 
       flash[:notice] = 'Reset password email is sent'
@@ -51,7 +50,7 @@ class UsersController < ApplicationController
   def reset_password; end
 
   def update_password
-    validate_password
+    @user = auth_service.validate_user
     if @user.update(encrypted_password: encrypted_password, reset_password_token: nil, reset_password_sent_at: nil)
       flash[:notice] = 'password is updated successfully'
       redirect_to login_path
@@ -61,44 +60,6 @@ class UsersController < ApplicationController
   end
 
   private
-
-  def user_params
-    params.require(:user).permit(:email, :name, :password, :password_confirmation)
-  end
-
-  def validate_password
-    if invalid_length?
-      @user.errors.add(:invalid_length, "password must not be less than #{min_password_length} characters")
-    end
-
-    if password_not_matched?
-      @user.errors.add(:password_not_matched, 'please confirm your password again')
-    end
-  end
-
-  def invalid_length?
-    password.size < min_password_length
-  end
-
-  def password
-    user_params[:password]
-  end
-
-  def password_confirmation
-    user_params[:password_confirmation]
-  end
-
-  def min_password_length
-    @min_password_length ||= User.min_password_length
-  end
-
-  def password_not_matched?
-    password != password_confirmation
-  end
-
-  def encrypted_password
-    BCrypt::Password.create(password).to_s
-  end
 
   def set_user
     @user = current_user
@@ -113,5 +74,17 @@ class UsersController < ApplicationController
     return if @user &.token_not_expired?
     flash[:alert] = 'link is expired'
     redirect_to root_path
+  end
+
+  def auth_service
+    @auth_service ||= UserAuthService.new(@user || User.new, user_params)
+  end
+
+  def user_params
+    params.require(:user).permit(:email, :name, :password, :password_confirmation)
+  end
+
+  def encrypted_password
+    auth_service.encrypted_password(user_params[:password])
   end
 end

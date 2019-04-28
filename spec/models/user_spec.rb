@@ -33,4 +33,10 @@ RSpec.describe User, type: :model do
       Then { user.token_not_expired? }
     end
   end
+
+  describe '#generate_token' do
+    Given(:user) { create(:user) }
+    When { user.generate_token }
+    Then { user.reset_password_token.present? && user.reset_password_sent_at.present? }
+  end
 end

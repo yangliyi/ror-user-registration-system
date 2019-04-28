@@ -13,6 +13,10 @@ class User < ApplicationRecord
     MIN_PASSWORD_LENGTH
   end
 
+  def generate_token
+    update(reset_password_token: SecureRandom.uuid, reset_password_sent_at: Time.now)
+  end
+
   def token_not_expired?
     return false unless reset_password_sent_at && reset_password_token
     reset_password_sent_at + RESET_EXPIRED_HOURS.hours > Time.now

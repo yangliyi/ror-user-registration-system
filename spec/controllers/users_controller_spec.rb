@@ -175,9 +175,11 @@ RSpec.describe UsersController, type: :controller do
       When do
         post :send_reset_email, params: params
       end
+      When(:reset_user) { User.find(user.id) }
       Then do
         expect(UserMailer).to have_received(:reset_password_email).with(an_instance_of(User)).once
       end
+      And { reset_user.reset_password_token.present? && reset_user.reset_password_sent_at.present? }
     end
   end
 
